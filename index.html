@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechSwap — Direct P2P Tech Marketplace (Myanmar)</title>
+  
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.25);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans transition-colors duration-200 antialiased selection:bg-brand-500 selection:text-white">
+
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-white/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+        
+        <!-- Logo & Brand -->
+        <div class="flex items-center gap-3 cursor-pointer" onclick="resetAllFilters()">
+          <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-brand-500/20">
+            <i data-lucide="refresh-cw" class="w-5 h-5 text-white"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-extrabold text-lg sm:text-xl tracking-tight text-slate-900 dark:text-white">
+                Tech<span class="text-brand-500">Swap</span>
+              </span>
+              <span class="hidden sm:inline-block text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-500 border border-brand-500/20">
+                P2P Direct
+              </span>
+            </div>
+            <p class="text-[11px] hidden sm:block text-slate-500 dark:text-slate-400">
+              0% Platform Fee · Direct Telegram & Meetup
+            </p>
+          </div>
+        </div>
+
+        <!-- Division Switcher Tabs -->
+        <nav class="hidden md:flex items-center p-1 rounded-xl border bg-slate-100 dark:bg-slate-950 border-slate-200 dark:border-slate-800" aria-label="Division Selector">
+          <button id="nav-btn-all" onclick="setDivision('ALL')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-sm bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400">
+            All Gear
+          </button>
+          <button id="nav-btn-software" onclick="setDivision('SOFTWARE')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
+            <i data-lucide="code-2" class="w-3.5 h-3.5 text-brand-500"></i>
+            Part 1: Software
+          </button>
+          <button id="nav-btn-hardware" onclick="setDivision('HARDWARE')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
+            <i data-lucide="laptop" class="w-3.5 h-3.5 text-indigo-500"></i>
+            Part 2: Hardware
+          </button>
+        </nav>
+
+        <!-- Right Utilities & User Bar -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Light/Dark Toggle -->
+          <button id="theme-toggle-btn" onclick="toggleTheme()" class="p-2 rounded-xl border bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-amber-400 border-slate-200 dark:border-slate-700 transition-all" aria-label="Toggle Theme">
+            <i id="theme-icon" data-lucide="sun" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Database Architecture Modal Trigger -->
+          <button onclick="openSchemaModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs rounded-xl border bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 transition" title="View Database Architecture & Prisma Schema">
+            <i data-lucide="database" class="w-3.5 h-3.5 text-indigo-500"></i>
+            <span class="hidden lg:inline font-medium">Schema / DB</span>
+          </button>
+
+          <!-- User Profile & Dropdown -->
+          <div class="relative" id="user-menu-wrapper">
+            <div id="user-profile-button-slot"></div>
+            <!-- Dropdown Menu -->
+            <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-72 border rounded-2xl shadow-2xl p-2 z-50 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+              <div class="flex items-center justify-between px-2 py-1.5 border-b mb-1.5 border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400">
+                <span class="text-[11px] font-semibold uppercase tracking-wider">Active Account</span>
+                <button onclick="openAuthModal('SIGN_UP')" class="text-[11px] font-medium text-brand-500 hover:underline flex items-center gap-1">
+                  <i data-lucide="user-plus" class="w-3 h-3"></i>+ New
+                </button>
+              </div>
+              <div id="active-user-badge" class="px-2 py-2 mb-2 rounded-xl bg-brand-500/10 border border-brand-500/20"></div>
+              
+              <div class="text-[10px] px-2 py-0.5 font-semibold uppercase text-slate-500 dark:text-slate-400">Saved Local Accounts</div>
+              <div id="user-switch-list" class="max-h-44 overflow-y-auto space-y-1 my-1"></div>
+
+              <div class="border-t border-slate-100 dark:border-slate-800 mt-2 pt-2 px-1">
+                <button onclick="signOutUser()" class="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-rose-500 dark:text-rose-400 hover:bg-rose-500/10 font-medium text-xs transition">
+                  <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Post Listing Button -->
+          <button onclick="openCreateListingModal()" class="flex items-center gap-1.5 bg-gradient-to-r from-brand-500 to-teal-600 hover:from-brand-400 hover:to-teal-500 text-slate-950 font-bold px-3.5 py-1.5 rounded-xl text-xs shadow-md shadow-brand-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
+            <span class="hidden sm:inline">Post a Listing</span>
+            <span class="sm:hidden">Post</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="relative overflow-hidden border-b border-slate-200 dark:border-slate-800 bg-gradient-to-b from-brand-50/40 via-white to-slate-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 transition-colors">
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.12),rgba(255,255,255,0))] pointer-events-none"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+      <div class="text-center max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-xs font-semibold mb-4">
+          <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+          Direct Peer-to-Peer Tech Exchange · Zero Platform Fees
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight leading-tight text-slate-900 dark:text-white">
+          Direct Peer Tech Deals, 
+          <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-500 via-teal-500 to-indigo-500">
+            Verified & In-Person
+          </span>
+        </h1>
+        <p class="mt-4 text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+          No middleman commission. Connect directly with students, developers, and techies in Myanmar via Telegram, Viber, or Phone Call. Download digital boilerplates instantly or test laptops in person before paying.
+        </p>
+
+        <!-- Safety Notice Pill -->
+        <div class="mt-6 inline-flex flex-wrap items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs border bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300">
+          <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 text-amber-500"></i>
+          <span>
+            <strong>Safety Protocol:</strong> Meet in public spaces (e.g., Hledan Center, MICT Park) & inspect hardware thoroughly. Never wire advance bank deposits.
+          </span>
+        </div>
+      </div>
+
+      <!-- Quick Search & Controls Bar -->
+      <div class="mt-8 max-w-4xl mx-auto border p-3 rounded-2xl shadow-xl flex flex-col md:flex-row items-center gap-3 transition-colors bg-white dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 shadow-slate-200/50 dark:shadow-black/50">
+        <div class="relative w-full flex-1">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+          <input
+            id="search-input"
+            type="text"
+            oninput="handleSearchChange(this.value)"
+            placeholder="Search MacBook, Notion workspace, Anker charger, Python notes..."
+            class="w-full rounded-xl pl-10 pr-10 py-2.5 text-xs sm:text-sm border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950/80 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500"
+          />
+          <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 w-full md:w-auto">
+          <select
+            id="sort-select"
+            onchange="handleSortChange(this.value)"
+            class="border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-brand-500 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
+          >
+            <option value="DEFAULT">Sort: Featured First</option>
+            <option value="LOW_TO_HIGH">Price: Low to High</option>
+            <option value="HIGH_TO_LOW">Price: High to Low</option>
+          </select>
+
+          <button
+            id="featured-toggle-btn"
+            onclick="toggleFeaturedOnly()"
+            class="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
+          >
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i>
+            Featured
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Category Filter Pills -->
+      <div id="category-pills-container" class="mt-6 flex flex-wrap items-center justify-center gap-2"></div>
+    </div>
+  </section>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 id="catalog-title" class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+          All Marketplace Listings
+        </h2>
+        <p id="catalog-subtitle" class="text-xs mt-0.5 text-slate-500 dark:text-slate-400">
+          Showing peer-to-peer items
+        </p>
+      </div>
+
+      <button id="reset-filters-btn" onclick="resetAllFilters()" class="hidden text-xs text-slate-400 hover:text-brand-500 flex items-center gap-1 underline underline-offset-4">
+        Reset filters
+      </button>
+    </div>
+
+    <!-- Product Cards Grid -->
+    <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden text-center py-20 border rounded-2xl p-8 bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 shadow-sm">
+      <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+        <i data-lucide="search" class="w-6 h-6"></i>
+      </div>
+      <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200">No matching listings found</h3>
+      <p class="text-xs mt-1 max-w-sm mx-auto text-slate-500 dark:text-slate-400">
+        Try adjusting your search query or switch categories to explore other peer items.
+      </p>
+    </div>
+  </main>
+
+  <!-- Product Detail Modal (Contains Delete Button for the Owner) -->
+  <div id="product-detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+    <div class="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto border rounded-2xl shadow-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100">
+      <div class="sticky top-0 z-20 flex items-center justify-between px-5 py-3.5 backdrop-blur border-b bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800">
+        <div class="flex items-center gap-2">
+          <span id="modal-type-badge" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"></span>
+          <span id="modal-item-id" class="text-xs text-slate-400 font-mono"></span>
+        </div>
+        <button onclick="closeProductModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 sm:p-6 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <div class="relative rounded-xl overflow-hidden bg-slate-950 border border-slate-800 aspect-video md:aspect-square">
+            <img id="modal-img" src="" alt="" class="w-full h-full object-cover">
+            <div id="modal-featured-badge" class="hidden absolute top-3 left-3 flex items-center gap-1 bg-amber-500 text-slate-950 font-bold text-[10px] px-2 py-0.5 rounded shadow">
+              <i data-lucide="sparkles" class="w-3 h-3 fill-slate-950"></i> Featured Item
+            </div>
+          </div>
+
+          <div class="flex flex-col justify-between">
+            <div>
+              <div id="modal-category" class="text-xs text-slate-400 font-medium mb-1"></div>
+              <h2 id="modal-title" class="text-lg sm:text-xl font-bold leading-snug text-slate-900 dark:text-white"></h2>
+
+              <div class="mt-3 py-2 px-3 rounded-xl border inline-block bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                <div class="text-[10px] uppercase font-mono text-slate-400">Direct Asking Price</div>
+                <div id="modal-price" class="text-2xl font-black text-brand-500"></div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400">Zero platform fees · Direct Cash or KPay upon meetup</div>
+              </div>
+
+              <p id="modal-desc" class="mt-4 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300"></p>
+            </div>
+
+            <!-- Dynamic Specifics -->
+            <div id="modal-specs" class="mt-4 space-y-2 text-xs"></div>
+          </div>
+        </div>
+
+        <!-- Inspection Advisory Warning -->
+        <div class="p-4 rounded-xl border flex items-start gap-3 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30">
+          <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5"></i>
+          <div class="text-xs leading-relaxed text-amber-800 dark:text-amber-200/90">
+            <span class="font-bold">Meetup Inspection Advisory:</span> For hardware, always test device functionality, cameras, displays, and accounts in a bright public area (coffee shops, shopping centers). For software assets, request a brief screenshare verification before paying.
+          </div>
+        </div>
+
+        <!-- Seller Contact Box -->
+        <div class="p-5 rounded-2xl border space-y-4 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <img id="modal-seller-avatar" src="" alt="" class="w-11 h-11 rounded-full object-cover ring-2 ring-brand-500">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span id="modal-seller-name" class="font-bold text-sm text-slate-900 dark:text-white"></span>
+                  <span id="modal-seller-verified" class="hidden flex items-center gap-0.5 text-[10px] font-semibold text-brand-500 bg-brand-500/10 px-1.5 py-0.5 rounded border border-brand-500/20">
+                    <i data-lucide="shield-check" class="w-3 h-3"></i> Verified Seller
+                  </span>
+                </div>
+                <div class="text-[11px] text-slate-400">Usually responds quickly · Direct P2P contact</div>
+              </div>
+            </div>
+
+            <button onclick="copyProductInquiry()" class="flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl border bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 shadow-sm transition">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Copy Message</span>
+            </button>
+          </div>
+
+          <!-- Direct Communication Channels or Owner Controls -->
+          <div id="modal-action-buttons-slot" class="pt-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Listing Modal -->
+  <div id="create-listing-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+    <div class="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto border rounded-2xl shadow-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100">
+      <div class="sticky top-0 z-20 flex items-center justify-between px-5 py-4 backdrop-blur border-b bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800">
+        <div>
+          <h3 class="font-bold text-base text-slate-900 dark:text-white">Create New Tech Swap Listing</h3>
+          <p class="text-xs text-slate-400">Post directly to buyers in Myanmar with zero cuts</p>
+        </div>
+        <button onclick="closeCreateListingModal()" class="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Free Limit Banner -->
+      <div id="post-limit-warning" class="hidden p-6 space-y-4">
+        <div class="p-5 rounded-2xl border text-center space-y-3 bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/30">
+          <i data-lucide="alert-triangle" class="w-10 h-10 text-rose-500 mx-auto"></i>
+          <h4 class="text-base font-bold text-rose-800 dark:text-rose-300">Free Tier Listing Limit Reached (2/2)</h4>
+          <p class="text-xs max-w-md mx-auto text-slate-600 dark:text-slate-300">
+            Free accounts can maintain up to 2 active listings simultaneously. Upgrade to a <strong>Verified Pro</strong> account for unlimited listings and featured badge pinning.
+          </p>
+          <div class="pt-2">
+            <button onclick="switchToProAccount()" class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold text-xs transition">
+              Switch to Aung Kyaw Thu (Pro Demo Account)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create Form -->
+      <form id="create-listing-form" onsubmit="handleFormSubmitListing(event)" class="p-5 sm:p-6 space-y-5 text-xs">
+        
+        <!-- Seller Identity Info (Email & Name) -->
+        <div class="p-4 rounded-xl border border-brand-500/30 bg-brand-50/40 dark:bg-brand-500/5 space-y-3">
+          <div class="font-bold text-xs text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
+            <i data-lucide="user-check" class="w-4 h-4"></i> Seller Information (ရောင်းချသူအချက်အလက်)
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Customer Name (အမည်) *</label>
+              <input type="text" id="post-seller-name" required placeholder="e.g. Ko Khant" class="w-full rounded-xl px-3 py-2 border bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Customer Email *</label>
+              <input type="email" id="post-seller-email" required placeholder="khant@example.com" class="w-full rounded-xl px-3 py-2 border bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Phone Number / Viber *</label>
+              <input type="tel" id="post-seller-phone" required placeholder="09xxxxxxxxx" class="w-full rounded-xl px-3 py-2 border bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Telegram Handle (Optional)</label>
+              <input type="text" id="post-seller-telegram" placeholder="without @" class="w-full rounded-xl px-3 py-2 border bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+            </div>
+          </div>
+        </div>
+
+        <!-- Plan Selection (Freemium vs Premium) -->
+        <div>
+          <label class="block font-semibold mb-2 text-slate-700 dark:text-slate-300">Choose Listing Plan (အစီအစဉ်ရွေးချယ်ပါ) *</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div id="plan-card-freemium" onclick="selectListingPlan('FREEMIUM')" class="cursor-pointer p-3.5 rounded-xl border-2 border-brand-500 bg-brand-500/10 transition shadow-sm">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
+                  <i data-lucide="badge-check" class="w-4 h-4"></i> Freemium Plan
+                </span>
+                <span class="text-[10px] font-mono font-bold bg-brand-500 text-slate-950 px-2 py-0.5 rounded">Free</span>
+              </div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Direct peer listing. Standard visibility with 0% platform take.</p>
+            </div>
+            <div id="plan-card-premium" onclick="selectListingPlan('PREMIUM')" class="cursor-pointer p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-amber-500 flex items-center gap-1.5">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5 fill-amber-500"></i> Premium Pro
+                </span>
+                <span class="text-[10px] font-mono font-bold bg-amber-500 text-slate-950 px-2 py-0.5 rounded">Featured</span>
+              </div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Priority pinned feed ranking, golden badge & verified glow.</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-2 text-slate-700 dark:text-slate-300">Marketplace Division *</label>
+          <div class="grid grid-cols-2 gap-3">
+            <button type="button" id="post-tab-software" onclick="setPostType('SOFTWARE')" class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-bold transition bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-400 shadow-sm">
+              <i data-lucide="code-2" class="w-4 h-4 text-brand-500"></i>
+              <span>Part 1: Software & Digital Assets</span>
+            </button>
+            <button type="button" id="post-tab-hardware" onclick="setPostType('HARDWARE')" class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-semibold transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400">
+              <i data-lucide="laptop" class="w-4 h-4 text-indigo-500"></i>
+              <span>Part 2: Hardware & Electronics</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2">
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Listing Title *</label>
+            <input type="text" id="post-title" required placeholder="e.g. Next.js 15 Fullstack SaaS Template" class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Price (MMK) *</label>
+            <input type="number" id="post-price" required placeholder="50000" class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Category *</label>
+            <select id="post-category" class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200"></select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Sub-category / Tag</label>
+            <input type="text" id="post-subcategory" placeholder="e.g. Notion, React, Figma" class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+          </div>
+        </div>
+
+        <!-- Conditional Software Fields -->
+        <div id="post-software-fields" class="p-4 rounded-xl border space-y-3 bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800">
+          <div class="font-semibold text-brand-600 dark:text-brand-400">Digital Asset Delivery Info</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Asset Type *</label>
+              <select id="post-digital-type" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+                <option value="STUDY_PACK">Curated Study Pack</option>
+                <option value="NOTION_TEMPLATE">Notion Template</option>
+                <option value="CODE_BOILERPLATE">Code Boilerplate / Starter</option>
+                <option value="GITHUB_INVITE">GitHub Repo Invite</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">File Format / Access *</label>
+              <input type="text" id="post-file-format" placeholder="e.g. PDF + Notion Link or ZIP file" value="PDF + Notion Link" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+            </div>
+          </div>
+        </div>
+
+        <!-- Conditional Hardware Fields -->
+        <div id="post-hardware-fields" class="hidden p-4 rounded-xl border space-y-3 bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800">
+          <div class="font-semibold text-indigo-400">Hardware Specifications</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Device Condition *</label>
+              <select id="post-condition" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-indigo-500 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+                <option value="LIKE_NEW">Like New (Mint / Unboxed)</option>
+                <option value="EXCELLENT_90_PLUS">90%+ Clean (Minor wear)</option>
+                <option value="GOOD_FAIR">Good / Fair Condition</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Battery Health % (Optional)</label>
+              <input type="number" id="post-battery" min="1" max="100" placeholder="e.g. 88" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-indigo-500 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+            </div>
+          </div>
+          <div>
+            <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Safe Public Meetup Location *</label>
+            <input type="text" id="post-location" placeholder="e.g. Hledan Center, MICT Park, Junction Square" value="Hledan Center / Kamayut, Yangon" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-indigo-500 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Detailed Description *</label>
+          <textarea id="post-desc" required rows="3" placeholder="Describe condition, specifications, bundled accessories, or digital asset details..." class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100"></textarea>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Photo / Thumbnail Image URL</label>
+          <input type="url" id="post-preview-url" placeholder="https://images.unsplash.com/... (Leave empty for default cover)" class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" onclick="closeCreateListingModal()" class="px-4 py-2 rounded-xl font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold transition shadow-lg shadow-brand-500/20">
+            Publish Listing
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Sign In / Register Modal -->
+  <div id="auth-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+    <div class="relative w-full max-w-md border rounded-2xl shadow-2xl overflow-hidden bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100">
+      <div class="flex items-center justify-between px-5 py-4 border-b bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800">
+        <div class="flex items-center gap-2">
+          <div class="p-1.5 rounded-lg bg-brand-500/10 text-brand-500">
+            <i data-lucide="log-in" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 id="auth-modal-title" class="font-bold text-sm text-slate-900 dark:text-white">Sign In to Tech Swap</h3>
+            <p class="text-[11px] text-slate-400">Direct peer communication & listings</p>
+          </div>
+        </div>
+        <button onclick="closeAuthModal()" class="p-1 text-slate-400 hover:text-slate-600 rounded-lg transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Auth Tab Header -->
+      <div class="grid grid-cols-2 p-1 border-b text-xs font-semibold border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60">
+        <button id="auth-tab-signin" onclick="switchAuthTab('SIGN_IN')" class="py-2 rounded-xl transition bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm">
+          Sign In with Email
+        </button>
+        <button id="auth-tab-signup" onclick="switchAuthTab('SIGN_UP')" class="py-2 rounded-xl transition text-slate-400 hover:text-slate-600">
+          Register / Sign Up
+        </button>
+      </div>
+
+      <!-- Sign In View -->
+      <div id="auth-signin-view" class="p-5 space-y-4 text-xs">
+        <form onsubmit="handleEmailSignIn(event)" class="space-y-3">
+          <div>
+            <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Email Address *</label>
+            <div class="relative">
+              <i data-lucide="mail" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input type="email" id="auth-signin-email" required placeholder="khant@developer.mm" class="w-full rounded-xl pl-9 pr-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+            </div>
+          </div>
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold transition shadow-lg shadow-brand-500/20">
+            Sign In
+          </button>
+        </form>
+
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div class="text-[11px] font-semibold text-slate-400 mb-2">Or One-Click Demo Sign In:</div>
+          <div id="demo-users-list" class="space-y-1.5"></div>
+        </div>
+      </div>
+
+      <!-- Sign Up View -->
+      <form id="auth-signup-view" onsubmit="handleUserSignUp(event)" class="hidden p-5 space-y-3 text-xs">
+        <div>
+          <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Full Name *</label>
+          <input type="text" id="reg-name" required placeholder="e.g. Ko Phyo Win" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Email *</label>
+            <input type="email" id="reg-email" required placeholder="phyo@code.mm" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+          </div>
+          <div>
+            <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Telegram *</label>
+            <input type="text" id="reg-telegram" required placeholder="e.g. phyo_tech" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+          </div>
+        </div>
+        <div>
+          <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Phone Number *</label>
+          <input type="tel" id="reg-phone" required placeholder="09xxxxxxxxx" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+        </div>
+        <div>
+          <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Seller Tier</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="tier-btn-free" onclick="setRegTier('FREE')" class="py-2 px-3 rounded-xl border text-center transition bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-400 font-bold">
+              Free Tier
+            </button>
+            <button type="button" id="tier-btn-pro" onclick="setRegTier('PRO')" class="py-2 px-3 rounded-xl border text-center transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400">
+              Verified Pro
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" onclick="closeAuthModal()" class="px-4 py-2 rounded-xl transition bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold transition shadow-lg shadow-brand-500/20">
+            Register & Sign In
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Schema Modal -->
+  <div id="schema-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+    <div class="relative w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col border rounded-2xl shadow-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-500">
+            <i data-lucide="database" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900 dark:text-white">System Architecture & Database Schema</h3>
+            <p class="text-xs text-slate-400">Prisma ORM with PostgreSQL for Peer-to-Peer Directory</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="schema-tab-prisma" onclick="setSchemaTab('PRISMA')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white">
+            schema.prisma
+          </button>
+          <button id="schema-tab-p2p" onclick="setSchemaTab('P2P')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 transition">
+            P2P Protocol Notes
+          </button>
+          <button onclick="closeSchemaModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 transition ml-2">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-6 overflow-y-auto flex-1 text-xs">
+        <div id="schema-view-prisma" class="space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 font-mono text-[11px]">prisma/schema.prisma</span>
+            <button onclick="copyPrismaSchema()" class="flex items-center gap-1.5 px-3 py-1 rounded transition bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Copy Prisma Schema</span>
+            </button>
+          </div>
+          <pre id="prisma-code-block" class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-brand-400 font-mono text-xs overflow-x-auto leading-relaxed selection:bg-slate-800"></pre>
+        </div>
+
+        <div id="schema-view-p2p" class="hidden space-y-5 leading-relaxed text-slate-700 dark:text-slate-300">
+          <div class="p-4 rounded-xl border space-y-2 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+            <h4 class="font-bold text-sm flex items-center gap-2 text-slate-900 dark:text-white">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-500"></i>
+              Zero Platform Checkout Architecture
+            </h4>
+            <p>Direct seller contact handles (Telegram, Viber, Call) are bound to each listing.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="border-t py-10 mt-16 text-xs transition-colors border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-500 dark:text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="h-7 w-7 rounded-lg bg-brand-500/20 text-brand-500 flex items-center justify-center">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <span class="font-bold text-slate-900 dark:text-white">Tech Swap</span> — Myanmar's Direct Peer-to-Peer Tech Directory
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <span>Direct Telegram & Viber Meetups</span>
+        <span>No Transaction Cut</span>
+        <button onclick="openSchemaModal()" class="text-brand-500 hover:underline">
+          Prisma / PostgreSQL Architecture
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Firebase Cloud Integration Script (အခြားသူများပါ တပြိုင်နက် သုံးနိုင်စေရန် ပြင်ဆင်ပြီး) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      deleteDoc, 
+      doc, 
+      onSnapshot, 
+      query, 
+      orderBy,
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // ကိုခန့်၏ တကယ့် Firebase Project Keys များ
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyR7uTtlrpTMsDUS_59uVu3UbyvMybfTY",
+      authDomain: "my-own-website-bb4e9.firebaseapp.com",
+      projectId: "my-own-website-bb4e9",
+      storageBucket: "my-own-website-bb4e9.firebasestorage.app",
+      messagingSenderId: "35886139510",
+      appId: "1:35886139510:web:9a1c78e894f7f6e98a3757"
+    };
+
+    const PRISMA_SCHEMA_CODE = `// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ListingType {
+  SOFTWARE
+  HARDWARE
+}
+
+enum SellerTier {
+  FREE
+  PRO
+}
+
+model User {
+  id             String     @id @default(cuid())
+  email          String     @unique
+  name           String
+  avatarUrl      String?
+  tier           SellerTier @default(FREE)
+  isVerified     Boolean    @default(false)
+  telegramHandle String
+  phoneNumber    String
+  listings       Listing[]
+}
+
+model Listing {
+  id             String             @id @default(cuid())
+  title          String
+  description    String
+  priceMMK       Int
+  type           ListingType
+  category       String
+  subCategory    String?
+  previewUrl     String
+  isFeatured     Boolean            @default(false)
+  plan           String             @default("FREEMIUM")
+  sellerId       String
+  seller         User               @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  createdAt      DateTime           @default(now())
+};`;
+
+    // Firebase Initialize
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const listingsCol = collection(db, "listings");
+
+    const CATEGORIES_DATA = {
+      SOFTWARE: [
+        'All Software',
+        'Curated Study Packs',
+        'Digital Templates & Tools',
+        'Code Snippets & Starter Projects'
+      ],
+      HARDWARE: [
+        'All Hardware',
+        'Laptops & Ultrabooks',
+        'Smartphones & Tablets',
+        'Chargers, Cables & Power Adapters',
+        'Peripherals & Accessories',
+        'Maker & IoT Hardware'
+      ]
+    };
+
+    const INITIAL_USERS = [
+      {
+        id: 'usr_1',
+        name: 'Aung Kyaw Thu',
+        email: 'aung@developer.mm',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+        tier: 'PRO',
+        isVerified: true,
+        telegramHandle: 'aung_dev',
+        viberNumber: '+959976543210',
+        phoneNumber: '09976543210',
+        township: 'Hledan, Kamayut',
+        bio: 'Fullstack Next.js developer & tech gear enthusiast'
+      },
+      {
+        id: 'usr_2',
+        name: 'May Thet Htar',
+        email: 'may@student.edu.mm',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
+        tier: 'FREE',
+        isVerified: false,
+        telegramHandle: 'may_tech',
+        viberNumber: '+959798765432',
+        phoneNumber: '09798765432',
+        township: 'Sanchaung, Yangon',
+        bio: 'CS Student specializing in Data Science & UI'
+      },
+      {
+        id: 'usr_3',
+        name: 'Min Khant',
+        email: 'minkhant@code.io',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+        tier: 'PRO',
+        isVerified: true,
+        telegramHandle: 'minkhant_cs',
+        viberNumber: '+959450011223',
+        phoneNumber: '09450011223',
+        township: 'MICT Park, Hlaing',
+        bio: 'Hardware tinkerer & competitive programmer'
+      }
+    ];
+
+    const savedUsers = localStorage.getItem('techswap_users');
+    const savedCurrentUserId = localStorage.getItem('techswap_current_user_id');
+
+    window.AppState = {
+      theme: localStorage.getItem('techswap_theme') || 'dark',
+      users: savedUsers ? JSON.parse(savedUsers) : INITIAL_USERS,
+      listings: [],
+      currentUser: null,
+      activeDivision: 'ALL',
+      selectedCategory: 'ALL',
+      searchQuery: '',
+      priceSort: 'DEFAULT',
+      onlyFeatured: false,
+      activeProduct: null,
+      currentPostType: 'SOFTWARE',
+      regTier: 'FREE',
+      selectedPlan: 'FREEMIUM',
+      isUserDropdownOpen: false
+    };
+
+    if (savedCurrentUserId) {
+      window.AppState.currentUser = window.AppState.users.find(u => u.id === savedCurrentUserId) || window.AppState.users[0];
+    } else {
+      window.AppState.currentUser = window.AppState.users[0] || null;
+    }
+
+    // 🟢 Realtime Cloud Database Sync (အခြားသူများတင်သမျှ အားလုံး တပြိုင်နက်ပေါ်စေသည့်နေရာ)
+    const q = query(listingsCol, orderBy("createdAt", "desc"));
+    onSnapshot(q, (snapshot) => {
+      window.AppState.listings = snapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }));
+      window.renderListings();
+      window.renderCategoryPills();
+    }, (error) => {
+      console.error("Firebase Realtime Error:", error);
+    });
+
+    function saveUserState() {
+      localStorage.setItem('techswap_users', JSON.stringify(window.AppState.users));
+      if (window.AppState.currentUser) {
+        localStorage.setItem('techswap_current_user_id', window.AppState.currentUser.id);
+      } else {
+        localStorage.removeItem('techswap_current_user_id');
+      }
+    }
+
+    window.applyTheme = function() {
+      const html = document.documentElement;
+      const themeIcon = document.getElementById('theme-icon');
+      if (window.AppState.theme === 'dark') {
+        html.classList.add('dark');
+        if (themeIcon) themeIcon.setAttribute('data-lucide', 'sun');
+      } else {
+        html.classList.remove('dark');
+        if (themeIcon) themeIcon.setAttribute('data-lucide', 'moon');
+      }
+      lucide.createIcons();
+    };
+
+    window.toggleTheme = function() {
+      window.AppState.theme = window.AppState.theme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('techswap_theme', window.AppState.theme);
+      window.applyTheme();
+    };
+
+    window.showToast = function(message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'pointer-events-auto flex items-center gap-3 bg-brand-600 text-white px-5 py-3 rounded-xl shadow-2xl border border-brand-400/40 transition-all duration-300';
+      toast.innerHTML = `
+        <i data-lucide="check-circle-2" class="w-5 h-5 flex-shrink-0"></i>
+        <span class="text-sm font-medium">${message}</span>
+      `;
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    };
+
+    window.renderUserNav = function() {
+      const slot = document.getElementById('user-profile-button-slot');
+      const activeUserBadge = document.getElementById('active-user-badge');
+      const userSwitchList = document.getElementById('user-switch-list');
+
+      if (!window.AppState.currentUser) {
+        slot.innerHTML = `
+          <button onclick="openAuthModal('SIGN_IN')" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-brand-600 dark:text-brand-400 border-slate-200 dark:border-slate-700 shadow-sm transition">
+            <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+            <span>Sign In</span>
+          </button>
+        `;
+        document.getElementById('user-dropdown-menu').classList.add('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      const firstName = window.AppState.currentUser.name.split(' ')[0];
+      const isPro = window.AppState.currentUser.tier === 'PRO';
+
+      slot.innerHTML = `
+        <button onclick="toggleUserDropdown(event)" class="flex items-center gap-2 border px-2.5 py-1.5 rounded-xl text-xs transition bg-white dark:bg-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700/80 shadow-sm">
+          <img src="${window.AppState.currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${window.AppState.currentUser.name}" class="w-5 h-5 rounded-full object-cover ring-1 ring-brand-500">
+          <div class="text-left hidden sm:block">
+            <div class="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
+              ${firstName}
+              ${isPro ? '<i data-lucide="shield-check" class="w-3.5 h-3.5 text-brand-500"></i>' : ''}
+            </div>
+            <div class="text-[10px] text-slate-500 dark:text-slate-400">
+              ${isPro ? 'Verified Pro' : 'Community Member'}
+            </div>
+          </div>
+        </button>
+      `;
+
+      activeUserBadge.innerHTML = `
+        <div class="font-semibold text-xs text-brand-500">${window.AppState.currentUser.name}</div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-300">${window.AppState.currentUser.email}</div>
+        <div class="text-[10px] text-slate-400 mt-0.5">Telegram: @${window.AppState.currentUser.telegramHandle || 'member'}</div>
+      `;
+
+      userSwitchList.innerHTML = window.AppState.users.map(usr => `
+        <button onclick="switchCurrentUser('${usr.id}')" class="w-full flex items-center justify-between p-2 rounded-xl text-left text-xs transition ${
+          window.AppState.currentUser.id === usr.id 
+            ? 'bg-brand-50 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-500/30 font-semibold'
+            : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+        }">
+          <div class="flex items-center gap-2">
+            <img src="${usr.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${usr.name}" class="w-5 h-5 rounded-full object-cover">
+            <span class="truncate max-w-[120px]">${usr.name}</span>
+          </div>
+          <span class="text-[9px] px-1.5 py-0.5 rounded font-mono ${
+            usr.tier === 'PRO' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-500/20 text-slate-400'
+          }">${usr.tier}</span>
+        </button>
+      `).join('');
+
+      lucide.createIcons();
+    };
+
+    window.toggleUserDropdown = function(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('user-dropdown-menu');
+      menu.classList.toggle('hidden');
+    };
+
+    document.addEventListener('click', (e) => {
+      const wrapper = document.getElementById('user-menu-wrapper');
+      const menu = document.getElementById('user-dropdown-menu');
+      if (wrapper && !wrapper.contains(e.target) && menu) {
+        menu.classList.add('hidden');
+      }
+    });
+
+    window.switchCurrentUser = function(id) {
+      const found = window.AppState.users.find(u => u.id === id);
+      if (found) {
+        window.AppState.currentUser = found;
+        saveUserState();
+        document.getElementById('user-dropdown-menu').classList.add('hidden');
+        window.renderUserNav();
+        window.renderListings();
+        window.showToast(`Switched active profile to ${found.name}`);
+      }
+    };
+
+    window.signOutUser = function() {
+      window.AppState.currentUser = null;
+      saveUserState();
+      document.getElementById('user-dropdown-menu').classList.add('hidden');
+      window.renderUserNav();
+      window.renderListings();
+      window.showToast('Signed out of Tech Swap');
+    };
+
+    window.setDivision = function(division) {
+      window.AppState.activeDivision = division;
+      window.AppState.selectedCategory = 'ALL';
+
+      const btnAll = document.getElementById('nav-btn-all');
+      const btnSoft = document.getElementById('nav-btn-software');
+      const btnHard = document.getElementById('nav-btn-hardware');
+      const inactiveClasses = 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+      
+      btnAll.className = 'px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
+        (division === 'ALL' ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm font-semibold' : inactiveClasses);
+      
+      btnSoft.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
+        (division === 'SOFTWARE' ? 'bg-brand-500/20 text-brand-400 border border-brand-500/30 font-semibold' : inactiveClasses);
+
+      btnHard.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
+        (division === 'HARDWARE' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-semibold' : inactiveClasses);
+
+      window.renderCategoryPills();
+      window.renderListings();
+    };
+
+    window.renderCategoryPills = function() {
+      const container = document.getElementById('category-pills-container');
+      const { activeDivision, selectedCategory, listings } = window.AppState;
+
+      let pillsHTML = `
+        <button onclick="setCategory('ALL')" class="text-xs px-3 py-1.5 rounded-xl border transition ${
+          selectedCategory === 'ALL'
+            ? 'bg-slate-900 dark:bg-slate-800 text-white border-slate-900 dark:border-slate-600 font-semibold'
+            : 'bg-white dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm'
+        }">
+          All Categories (${listings.length})
+        </button>
+      `;
+
+      if (activeDivision === 'ALL' || activeDivision === 'SOFTWARE') {
+        CATEGORIES_DATA.SOFTWARE.slice(1).forEach(cat => {
+          const isSelected = selectedCategory === cat;
+          pillsHTML += `
+            <button onclick="setCategory('${cat}')" class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border transition ${
+              isSelected
+                ? 'bg-brand-500/20 text-brand-500 border-brand-500/40 font-semibold'
+                : 'bg-white dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300 shadow-sm'
+            }">
+              <i data-lucide="code-2" class="w-3 h-3 text-brand-500"></i>
+              ${cat}
+            </button>
+          `;
+        });
+      }
+
+      if (activeDivision === 'ALL' || activeDivision === 'HARDWARE') {
+        CATEGORIES_DATA.HARDWARE.slice(1).forEach(cat => {
+          const isSelected = selectedCategory === cat;
+          pillsHTML += `
+            <button onclick="setCategory('${cat}')" class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border transition ${
+              isSelected
+                ? 'bg-indigo-500/20 text-indigo-500 border-indigo-500/40 font-semibold'
+                : 'bg-white dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300 shadow-sm'
+            }">
+              <i data-lucide="laptop" class="w-3 h-3 text-indigo-500"></i>
+              ${cat}
+            </button>
+          `;
+        });
+      }
+
+      container.innerHTML = pillsHTML;
+      lucide.createIcons();
+    };
+
+    window.setCategory = function(cat) {
+      window.AppState.selectedCategory = cat;
+      window.renderCategoryPills();
+      window.renderListings();
+    };
+
+    window.handleSearchChange = function(val) {
+      window.AppState.searchQuery = val;
+      const clearBtn = document.getElementById('clear-search-btn');
+      if (val.trim()) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+      window.renderListings();
+    };
+
+    window.clearSearch = function() {
+      const input = document.getElementById('search-input');
+      input.value = '';
+      window.AppState.searchQuery = '';
+      document.getElementById('clear-search-btn').classList.add('hidden');
+      window.renderListings();
+    };
+
+    window.handleSortChange = function(val) {
+      window.AppState.priceSort = val;
+      window.renderListings();
+    };
+
+    window.toggleFeaturedOnly = function() {
+      window.AppState.onlyFeatured = !window.AppState.onlyFeatured;
+      const btn = document.getElementById('featured-toggle-btn');
+      if (window.AppState.onlyFeatured) {
+        btn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border transition bg-amber-500/20 text-amber-500 border-amber-500/40';
+      } else {
+        btn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200';
+      }
+      window.renderListings();
+    };
+
+    window.resetAllFilters = function() {
+      window.AppState.activeDivision = 'ALL';
+      window.AppState.selectedCategory = 'ALL';
+      window.AppState.searchQuery = '';
+      window.AppState.priceSort = 'DEFAULT';
+      window.AppState.onlyFeatured = false;
+
+      document.getElementById('search-input').value = '';
+      document.getElementById('clear-search-btn').classList.add('hidden');
+      document.getElementById('sort-select').value = 'DEFAULT';
+
+      const featBtn = document.getElementById('featured-toggle-btn');
+      featBtn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200';
+
+      window.setDivision('ALL');
+    };
+
+    window.renderListings = function() {
+      const grid = document.getElementById('listings-grid');
+      const emptyState = document.getElementById('empty-state');
+      const resetBtn = document.getElementById('reset-filters-btn');
+      const catalogTitle = document.getElementById('catalog-title');
+      const catalogSubtitle = document.getElementById('catalog-subtitle');
+
+      if (window.AppState.activeDivision === 'ALL') {
+        catalogTitle.textContent = 'All Marketplace Listings';
+      } else if (window.AppState.activeDivision === 'SOFTWARE') {
+        catalogTitle.textContent = 'Part 1: Software & Digital Assets';
+      } else {
+        catalogTitle.textContent = 'Part 2: Hardware & Pre-Owned Gear';
+      }
+
+      const isFiltered = window.AppState.activeDivision !== 'ALL' || window.AppState.selectedCategory !== 'ALL' || window.AppState.searchQuery || window.AppState.onlyFeatured;
+      if (isFiltered) resetBtn.classList.remove('hidden');
+      else resetBtn.classList.add('hidden');
+
+      const filtered = window.AppState.listings.filter(item => {
+        if (window.AppState.activeDivision !== 'ALL' && item.type !== window.AppState.activeDivision) return false;
+        if (window.AppState.selectedCategory !== 'ALL' && !window.AppState.selectedCategory.startsWith('All')) {
+          if (item.category !== window.AppState.selectedCategory) return false;
+        }
+        if (window.AppState.onlyFeatured && !item.isFeatured) return false;
+        if (window.AppState.searchQuery.trim() !== '') {
+          const q = window.AppState.searchQuery.toLowerCase();
+          const matchTitle = item.title?.toLowerCase().includes(q);
+          const matchDesc = item.description?.toLowerCase().includes(q);
+          const matchCat = item.category?.toLowerCase().includes(q);
+          const matchLoc = item.meetupLocation ? item.meetupLocation.toLowerCase().includes(q) : false;
+          if (!matchTitle && !matchDesc && !matchCat && !matchLoc) return false;
+        }
+        return true;
+      });
+
+      filtered.sort((a, b) => {
+        if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
+        if (window.AppState.priceSort === 'LOW_TO_HIGH') return a.priceMMK - b.priceMMK;
+        if (window.AppState.priceSort === 'HIGH_TO_LOW') return b.priceMMK - a.priceMMK;
+        return 0;
+      });
+
+      catalogSubtitle.textContent = `Showing ${filtered.length} direct peer items`;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      grid.innerHTML = filtered.map(item => {
+        const isSoftware = item.type === 'SOFTWARE';
+        const usdEst = (item.priceMMK / 3500).toFixed(1);
+
+        let badgeExtra = '';
+        if (!isSoftware && item.condition) {
+          const condText = item.condition === 'LIKE_NEW' ? 'Like New' : item.condition === 'EXCELLENT_90_PLUS' ? '90%+ Clean' : 'Fair';
+          const batt = item.batteryHealth ? ` · Batt: ${item.batteryHealth}%` : '';
+          badgeExtra = `<span class="text-[10px] px-2 py-0.5 rounded bg-slate-950/90 border border-slate-700/80 text-indigo-300 font-mono">${condText}${batt}</span>`;
+        } else if (isSoftware && item.digitalType) {
+          badgeExtra = `<span class="text-[10px] px-2 py-0.5 rounded bg-slate-950/90 border border-slate-700/80 text-brand-300 font-mono">${item.digitalType.replace(/_/g, ' ')}</span>`;
+        }
+
+        const borderFeaturedClass = item.isFeatured 
+          ? 'bg-white dark:bg-slate-900/90 border-amber-400 dark:border-amber-500/40 ring-1 ring-amber-400/30 dark:ring-amber-500/20'
+          : 'bg-white dark:bg-slate-900/80 hover:bg-slate-50/50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700';
+
+        return `
+          <div onclick="openProductModal('${item.id}')" class="group relative flex flex-col border rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${borderFeaturedClass}">
+            <div class="relative h-44 w-full bg-slate-950 overflow-hidden">
+              <img src="${item.previewUrl}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
+              
+              ${item.isFeatured ? `
+                <div class="absolute top-2.5 left-2.5 flex items-center gap-1 bg-amber-500 text-slate-950 font-bold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded shadow">
+                  <i data-lucide="sparkles" class="w-3 h-3 fill-slate-950"></i>
+                  Featured / Premium
+                </div>
+              ` : ''}
+
+              <div class="absolute top-2.5 right-2.5">
+                ${isSoftware ? `
+                  <span class="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-brand-500 text-slate-950 backdrop-blur-md shadow">
+                    <i data-lucide="code-2" class="w-3 h-3"></i>
+                    Digital
+                  </span>
+                ` : `
+                  <span class="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-600 text-white backdrop-blur-md shadow">
+                    <i data-lucide="laptop" class="w-3 h-3"></i>
+                    Hardware
+                  </span>
+                `}
+              </div>
+
+              <div class="absolute bottom-2 left-2.5 flex items-center gap-1.5 flex-wrap">
+                ${badgeExtra}
+              </div>
+            </div>
+
+            <div class="p-4 flex-1 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between text-[11px] mb-1.5 text-slate-500 dark:text-slate-400">
+                  <span class="truncate max-w-[170px]">${item.category}</span>
+                  <span>Direct Cloud</span>
+                </div>
+
+                <h3 class="font-semibold text-sm transition-colors line-clamp-2 leading-snug text-slate-900 dark:text-slate-100 group-hover:text-brand-500">
+                  ${item.title}
+                </h3>
+
+                <div class="mt-2.5 flex items-baseline gap-2">
+                  <span class="text-base font-extrabold text-slate-900 dark:text-white">
+                    ${Number(item.priceMMK).toLocaleString()} MMK
+                  </span>
+                  <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                    ≈ $${usdEst}
+                  </span>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                <div class="flex items-center gap-1.5">
+                  <img src="${item.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="seller" class="w-5 h-5 rounded-full object-cover">
+                  <span class="font-medium text-[11px] truncate max-w-[100px] text-slate-700 dark:text-slate-300">
+                    ${item.sellerName || 'Verified Seller'}
+                  </span>
+                </div>
+
+                <div class="flex items-center gap-1 text-[11px] truncate max-w-[120px] text-slate-500 dark:text-slate-400">
+                  ${isSoftware ? `
+                    <span class="text-brand-500 font-medium">Instant</span>
+                  ` : `
+                    <div class="flex items-center gap-0.5 truncate">
+                      <i data-lucide="map-pin" class="w-3 h-3 text-slate-400 flex-shrink-0"></i>
+                      <span class="truncate">${item.meetupLocation ? item.meetupLocation.split(',')[0] : 'Yangon'}</span>
+                    </div>
+                  `}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    };
+
+    window.openProductModal = function(id) {
+      const item = window.AppState.listings.find(x => x.id === id);
+      if (!item) return;
+      window.AppState.activeProduct = item;
+
+      const isSoftware = item.type === 'SOFTWARE';
+
+      const typeBadge = document.getElementById('modal-type-badge');
+      typeBadge.textContent = item.type;
+      typeBadge.className = `text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+        isSoftware ? 'bg-brand-500/20 text-brand-500 dark:text-brand-400 border border-brand-500/30' : 'bg-indigo-500/20 text-indigo-500 dark:text-indigo-400 border border-indigo-500/30'
+      }`;
+
+      document.getElementById('modal-item-id').textContent = `ID: ${item.id.slice(0, 8)}`;
+      document.getElementById('modal-img').src = item.previewUrl;
+
+      const featBadge = document.getElementById('modal-featured-badge');
+      if (item.isFeatured) featBadge.classList.remove('hidden');
+      else featBadge.classList.add('hidden');
+
+      document.getElementById('modal-category').textContent = `${item.category} · ${item.subCategory || 'General'}`;
+      document.getElementById('modal-title').textContent = item.title;
+      document.getElementById('modal-price').textContent = `${Number(item.priceMMK).toLocaleString()} MMK`;
+      document.getElementById('modal-desc').textContent = item.description;
+
+      const specsDiv = document.getElementById('modal-specs');
+      if (isSoftware) {
+        specsDiv.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="w-28 text-slate-500 dark:text-slate-400">Digital Format:</span>
+            <span class="font-semibold text-brand-500">${item.fileFormat || 'Instant Notion/File'}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-28 text-slate-500 dark:text-slate-400">Delivery:</span>
+            <span class="font-mono text-slate-400">${item.digitalType || 'STUDY_PACK'}</span>
+          </div>
+        `;
+      } else {
+        const condFormatted = item.condition ? item.condition.replace(/_/g, ' ') : 'Good';
+        specsDiv.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="w-28 text-slate-500 dark:text-slate-400">Condition:</span>
+            <span class="font-semibold text-indigo-500">${condFormatted}${item.batteryHealth ? ` (Battery: ${item.batteryHealth}%)` : ''}</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="w-28 flex-shrink-0 text-slate-500 dark:text-slate-400">Meetup Location:</span>
+            <span class="font-medium text-amber-500 flex items-center gap-1">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-500 flex-shrink-0"></i>
+              ${item.meetupLocation || 'Kamayut, Yangon'}
+            </span>
+          </div>
+        `;
+      }
+
+      document.getElementById('modal-seller-avatar').src = item.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+      document.getElementById('modal-seller-name').textContent = item.sellerName || 'Community Seller';
+
+      // Contact or Owner Delete Control
+      const actionSlot = document.getElementById('modal-action-buttons-slot');
+      const isOwner = window.AppState.currentUser && (item.sellerEmail?.toLowerCase() === window.AppState.currentUser.email?.toLowerCase());
+
+      if (isOwner) {
+        actionSlot.innerHTML = `
+          <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+            <div class="text-[11px] text-amber-500 font-medium flex-1 text-center sm:text-left">
+              ⭐ သင့်ကိုယ်ပိုင် ပစ္စည်းဖြစ်သည် (ရောင်းထွက်ပြီးပါက ဖျက်နိုင်ပါသည်)
+            </div>
+            <button onclick="deleteListing('${item.id}')" class="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-500 font-bold text-xs transition">
+              <i data-lucide="trash-2" class="w-4 h-4 text-rose-500"></i>
+              <span>Mark as Sold / Delete Listing</span>
+            </button>
+          </div>
+        `;
+      } else {
+        const rawTg = (item.contactTelegram || 'techswap').replace('@', '');
+        const rawPhone = item.contactPhone || '09976543210';
+
+        actionSlot.innerHTML = `
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <a href="https://t.me/${rawTg}" target="_blank" rel="noreferrer" class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-500 font-semibold text-xs transition">
+              <i data-lucide="send" class="w-4 h-4 text-sky-500"></i>
+              <span>Telegram (@${rawTg})</span>
+            </a>
+            <a href="tel:${rawPhone}" class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500/15 hover:bg-brand-500/25 border border-brand-500/30 text-brand-600 dark:text-brand-400 font-semibold text-xs transition">
+              <i data-lucide="phone" class="w-4 h-4 text-brand-500"></i>
+              <span>Call (${rawPhone})</span>
+            </a>
+          </div>
+        `;
+      }
+
+      const modal = document.getElementById('product-detail-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
+    };
+
+    window.closeProductModal = function() {
+      const modal = document.getElementById('product-detail-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      window.AppState.activeProduct = null;
+    };
+
+    /* Cloud Delete Listing */
+    window.deleteListing = async function(id) {
+      const confirmDelete = confirm("ပစ္စည်း ရောင်းထွက်သွားပြီ ဖြစ်၍ Cloud စာရင်းထဲမှ အပြီးတိုင် ဖျက်ချင်တာ သေချာပါသလား?");
+      if (!confirmDelete) return;
+
+      try {
+        await deleteDoc(doc(db, "listings", id));
+        window.closeProductModal();
+        window.showToast('ပစ္စည်းစာရင်းမှ အောင်မြင်စွာ ဖျက်ပြီးပါပြီ (Sold & Removed)!');
+      } catch (err) {
+        alert("ဖျက်ရာတွင် အမှားဖြစ်ပေါ်ပါသည်: " + err.message);
+      }
+    };
+
+    window.copyProductInquiry = function() {
+      if (!window.AppState.activeProduct) return;
+      const text = `Hi! I found your listing "${window.AppState.activeProduct.title}" (${Number(window.AppState.activeProduct.priceMMK).toLocaleString()} MMK) on Tech Swap. Is it still available?`;
+      
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        window.showToast('Copied inquiry message to clipboard!');
+      } catch (err) {
+        window.showToast('Unable to copy text.');
+      }
+      document.body.removeChild(textArea);
+    };
+
+    window.openCreateListingModal = function() {
+      if (window.AppState.currentUser) {
+        document.getElementById('post-seller-name').value = window.AppState.currentUser.name;
+        document.getElementById('post-seller-email').value = window.AppState.currentUser.email;
+        document.getElementById('post-seller-phone').value = window.AppState.currentUser.phoneNumber || '';
+        document.getElementById('post-seller-telegram').value = window.AppState.currentUser.telegramHandle || '';
+      }
+      populatePostCategorySelect();
+      const modal = document.getElementById('create-listing-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
+    };
+
+    window.closeCreateListingModal = function() {
+      const modal = document.getElementById('create-listing-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    };
+
+    window.selectListingPlan = function(plan) {
+      window.AppState.selectedPlan = plan;
+      const cardFree = document.getElementById('plan-card-freemium');
+      const cardPrem = document.getElementById('plan-card-premium');
+      if (plan === 'FREEMIUM') {
+        cardFree.className = 'cursor-pointer p-3.5 rounded-xl border-2 border-brand-500 bg-brand-500/10 transition shadow-sm';
+        cardPrem.className = 'cursor-pointer p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition';
+      } else {
+        cardPrem.className = 'cursor-pointer p-3.5 rounded-xl border-2 border-amber-500 bg-amber-500/10 transition shadow-sm';
+        cardFree.className = 'cursor-pointer p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition';
+      }
+    };
+
+    window.setPostType = function(type) {
+      window.AppState.currentPostType = type;
+      const btnSoft = document.getElementById('post-tab-software');
+      const btnHard = document.getElementById('post-tab-hardware');
+      const softFields = document.getElementById('post-software-fields');
+      const hardFields = document.getElementById('post-hardware-fields');
+
+      if (type === 'SOFTWARE') {
+        btnSoft.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-bold transition bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-400 shadow-sm';
+        btnHard.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-semibold transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
+        softFields.classList.remove('hidden');
+        hardFields.classList.add('hidden');
+      } else {
+        btnHard.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-bold transition bg-indigo-500/20 border-indigo-500 text-indigo-400 shadow-sm';
+        btnSoft.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-semibold transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
+        hardFields.classList.remove('hidden');
+        softFields.classList.add('hidden');
+      }
+
+      populatePostCategorySelect();
+    };
+
+    function populatePostCategorySelect() {
+      const select = document.getElementById('post-category');
+      const list = window.AppState.currentPostType === 'SOFTWARE' ? CATEGORIES_DATA.SOFTWARE.slice(1) : CATEGORIES_DATA.HARDWARE.slice(1);
+      select.innerHTML = list.map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+    /* Cloud Publish Listing */
+    window.handleFormSubmitListing = async function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('post-seller-name').value.trim();
+      const email = document.getElementById('post-seller-email').value.trim();
+      const phone = document.getElementById('post-seller-phone').value.trim();
+      const tg = document.getElementById('post-seller-telegram').value.replace('@', '').trim();
+      const isPremium = window.AppState.selectedPlan === 'PREMIUM';
+
+      let user = window.AppState.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (!user) {
+        user = {
+          id: `usr_${Date.now()}`,
+          name,
+          email,
+          phoneNumber: phone,
+          telegramHandle: tg || 'swap_member',
+          tier: isPremium ? 'PRO' : 'FREE',
+          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
+        };
+        window.AppState.users.unshift(user);
+      } else {
+        user.name = name;
+        user.phoneNumber = phone;
+        user.telegramHandle = tg || user.telegramHandle;
+      }
+
+      window.AppState.currentUser = user;
+      saveUserState();
+
+      const title = document.getElementById('post-title').value.trim();
+      const price = parseInt(document.getElementById('post-price').value, 10) || 0;
+      const category = document.getElementById('post-category').value;
+      const subCategory = document.getElementById('post-subcategory').value.trim();
+      const description = document.getElementById('post-desc').value.trim();
+      const previewUrl = document.getElementById('post-preview-url').value.trim() || 
+        (window.AppState.currentPostType === 'SOFTWARE' 
+          ? 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80' 
+          : 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80');
+
+      const newListing = {
+        title,
+        description,
+        priceMMK: price,
+        type: window.AppState.currentPostType,
+        category,
+        subCategory: subCategory || (window.AppState.currentPostType === 'SOFTWARE' ? 'Digital Asset' : 'Hardware Device'),
+        previewUrl,
+        isFeatured: isPremium,
+        plan: window.AppState.selectedPlan,
+        sellerName: name,
+        sellerEmail: email,
+        sellerAvatar: user.avatar,
+        contactPhone: phone,
+        contactTelegram: tg,
+        createdAt: serverTimestamp()
+      };
+
+      if (window.AppState.currentPostType === 'HARDWARE') {
+        newListing.condition = document.getElementById('post-condition').value;
+        const batt = document.getElementById('post-battery').value;
+        if (batt) newListing.batteryHealth = parseInt(batt, 10);
+        newListing.meetupLocation = document.getElementById('post-location').value;
+      } else {
+        newListing.digitalType = document.getElementById('post-digital-type').value;
+        newListing.fileFormat = document.getElementById('post-file-format').value;
+      }
+
+      try {
+        await addDoc(listingsCol, newListing);
+        window.closeCreateListingModal();
+        document.getElementById('create-listing-form').reset();
+        window.renderUserNav();
+        window.showToast(`Listing posted to Cloud under ${name}!`);
+      } catch (err) {
+        alert("Cloud သို့ ပစ္စည်းတင်ရာတွင် အမှားဖြစ်ပေါ်ပါသည်: " + err.message);
+      }
+    };
+
+    window.openAuthModal = function(initialTab = 'SIGN_IN') {
+      switchAuthTab(initialTab);
+      renderDemoUsersList();
+      const modal = document.getElementById('auth-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
+    };
+
+    window.closeAuthModal = function() {
+      const modal = document.getElementById('auth-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    };
+
+    function switchAuthTab(tab) {
+      const tabSignIn = document.getElementById('auth-tab-signin');
+      const tabSignUp = document.getElementById('auth-tab-signup');
+      const viewSignIn = document.getElementById('auth-signin-view');
+      const viewSignUp = document.getElementById('auth-signup-view');
+      const title = document.getElementById('auth-modal-title');
+
+      if (tab === 'SIGN_IN') {
+        tabSignIn.className = 'py-2 rounded-xl transition bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm';
+        tabSignUp.className = 'py-2 rounded-xl transition text-slate-400 hover:text-slate-600';
+        viewSignIn.classList.remove('hidden');
+        viewSignUp.classList.add('hidden');
+        title.textContent = 'Sign In to Tech Swap';
+      } else {
+        tabSignUp.className = 'py-2 rounded-xl transition bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm';
+        tabSignIn.className = 'py-2 rounded-xl transition text-slate-400 hover:text-slate-600';
+        viewSignUp.classList.remove('hidden');
+        viewSignUp.classList.add('hidden');
+        title.textContent = 'Create Free Account';
+      }
+    }
+
+    function renderDemoUsersList() {
+      const list = document.getElementById('demo-users-list');
+      list.innerHTML = window.AppState.users.map(u => `
+        <button type="button" onclick="selectDemoUser('${u.id}')" class="w-full flex items-center justify-between p-2 rounded-xl border text-left transition bg-slate-50 dark:bg-slate-950/80 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800">
+          <div class="flex items-center gap-2">
+            <img src="${u.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${u.name}" class="w-6 h-6 rounded-full object-cover">
+            <div>
+              <div class="font-semibold text-slate-800 dark:text-slate-200">${u.name}</div>
+              <div class="text-[10px] text-slate-400">${u.email}</div>
+            </div>
+          </div>
+          <span class="text-[10px] font-mono text-brand-500 font-semibold">${u.tier}</span>
+        </button>
+      `).join('');
+    }
+
+    window.selectDemoUser = function(id) {
+      window.switchCurrentUser(id);
+      window.closeAuthModal();
+    };
+
+    window.handleEmailSignIn = function(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-signin-email').value.trim();
+      let matched = window.AppState.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (matched) {
+        window.AppState.currentUser = matched;
+      } else {
+        const username = email.split('@')[0];
+        matched = {
+          id: `usr_${Date.now()}`,
+          name: username,
+          email,
+          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+          tier: 'FREE',
+          isVerified: false,
+          telegramHandle: username,
+          viberNumber: '+959976543210',
+          phoneNumber: '09976543210',
+          township: 'Yangon',
+          bio: 'Tech Swap Member'
+        };
+        window.AppState.users.push(matched);
+        window.AppState.currentUser = matched;
+      }
+      saveUserState();
+      window.closeAuthModal();
+      window.renderUserNav();
+      window.renderListings();
+      window.showToast(`Welcome, ${window.AppState.currentUser.name}!`);
+    };
+
+    window.setRegTier = function(tier) {
+      window.AppState.regTier = tier;
+      const btnFree = document.getElementById('tier-btn-free');
+      const btnPro = document.getElementById('tier-btn-pro');
+      if (tier === 'FREE') {
+        btnFree.className = 'py-2 px-3 rounded-xl border text-center transition bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-400 font-bold';
+        btnPro.className = 'py-2 px-3 rounded-xl border text-center transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
+      } else {
+        btnPro.className = 'py-2 px-3 rounded-xl border text-center transition bg-indigo-500/20 border-indigo-500 text-indigo-500 font-bold';
+        btnFree.className = 'py-2 px-3 rounded-xl border text-center transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
+      }
+    };
+
+    window.handleUserSignUp = function(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const telegram = document.getElementById('reg-telegram').value.replace('@', '').trim();
+      const phone = document.getElementById('reg-phone').value.trim();
+
+      const newUser = {
+        id: `usr_${Date.now()}`,
+        name,
+        email,
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+        tier: window.AppState.regTier,
+        isVerified: window.AppState.regTier === 'PRO',
+        telegramHandle: telegram,
+        viberNumber: phone,
+        phoneNumber: phone,
+        township: 'Yangon',
+        bio: 'New Tech Swap community member'
+      };
+
+      window.AppState.users.unshift(newUser);
+      window.AppState.currentUser = newUser;
+      saveUserState();
+
+      window.closeAuthModal();
+      document.getElementById('auth-signup-view').reset();
+      window.renderUserNav();
+      window.renderListings();
+      window.showToast(`Account registered! Welcome, ${newUser.name}!`);
+    };
+
+    window.openSchemaModal = function() {
+      document.getElementById('prisma-code-block').textContent = PRISMA_SCHEMA_CODE;
+      window.setSchemaTab('PRISMA');
+      const modal = document.getElementById('schema-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
+    };
+
+    window.closeSchemaModal = function() {
+      const modal = document.getElementById('schema-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    };
+
+    window.setSchemaTab = function(tab) {
+      const tabPrisma = document.getElementById('schema-tab-prisma');
+      const tabP2p = document.getElementById('schema-tab-p2p');
+      const viewPrisma = document.getElementById('schema-view-prisma');
+      const viewP2p = document.getElementById('schema-view-p2p');
+
+      if (tab === 'PRISMA') {
+        tabPrisma.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white';
+        tabP2p.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 transition';
+        viewPrisma.classList.remove('hidden');
+        viewP2p.classList.add('hidden');
+      } else {
+        tabP2p.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white';
+        tabPrisma.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 transition';
+        viewP2p.classList.remove('hidden');
+        viewPrisma.classList.add('hidden');
+      }
+    };
+
+    window.copyPrismaSchema = function() {
+      const textArea = document.createElement("textarea");
+      textArea.value = PRISMA_SCHEMA_CODE;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        window.showToast('Prisma schema copied to clipboard!');
+      } catch (err) {
+        window.showToast('Unable to copy schema.');
+      }
+      document.body.removeChild(textArea);
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      window.applyTheme();
+      window.renderUserNav();
+      window.renderCategoryPills();
+    });
+  </script>
+</body>
+</html>
